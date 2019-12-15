@@ -1,4 +1,5 @@
-# FFrame
+FFrame
+======
 
 FFrame is a simple class to discretize a 1D function's
 domain and image.
