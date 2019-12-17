@@ -2,7 +2,7 @@ FFrame
 ======
 
 FFrame is a simple class to discretize a 1D function's
-domain and image.
+domain and image. Some investigations on performance will also be undertaken.
 
 Dependencies:
     - numpy
