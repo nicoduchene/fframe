@@ -15,7 +15,6 @@ class FFrame(object):
         image_gran (float): Image granularity. Defaults to 0.5.
     Attributes:
         domain (:obj:array of :obj:float): Discretized domain.
-        interpolator (:obj:callable): 1dinterp object.
         func_domain (:obj:array of :obj:float): Domain used for interpolator.        
         values (:obj:array of :obj:float): Values of func interpolated on domain.
         discrete_func (:obj:array of :obj:float): Discretized function.
