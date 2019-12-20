@@ -10,3 +10,7 @@ given some allowed values.
 After re-reading I realized I made a conceptual error
 in the lut_method, and fixed it with the functional_method,
 which is much faster as well.
+
+TODO: 
+  - Explain thought process
+  - Wrap up
