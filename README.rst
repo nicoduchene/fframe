@@ -1,22 +1,15 @@
 FFrame
 ======
 
-FFrame is a simple class to discretize a 1D function's
-domain and image. Some investigations on performance will also be undertaken.
+FFrame was a quick comparison between two algorithms.
+One was extremely inefficient, and the second much faster!
+The goal was to discretize a function's domain and image
+given some allowed values.
 
 Dependencies:
     - numpy
     - scipy
     - matplotlib
-
-To do:
-    - Write tests and try blocks (*gasp*).
-    - Customize plot output.
-    - Add direct input of domain.
-    - Add a refresh method.
-    - Generalize to N-D
-    - Add new interpolation schemes.
-
 
 Questions:
     - What is the operational overhead of implementing an iterative 
