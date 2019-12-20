@@ -9,7 +9,6 @@ class FFrame(object):
         domain_max (float): Maximum of the domain.
         func (:obj:callable): Function to discretize.
         funcsteps (int, optional): Number of steps to interpolate function on. Defaults to 100.
-        extrapolate (bool, optional): Whether or not to include the points immediately 
         outside the domain. Defaults to True.
         domain_gran (float): Domain granularity. Defaults to 5.
         image_gran (float): Image granularity. Defaults to 0.5.
@@ -26,13 +25,13 @@ class FFrame(object):
 
     
     def __init__(self, domain_min, domain_max, func,
-                funcsteps=100, extrapolate=True,
+                funcsteps=100,
                 domain_gran=5, image_gran=0.5,
-                func_values, ):
+                ):
 
         self.domain_gran = domain_gran
         self.image_gran = image_gran
-        # Create the domain, interpolator, and interpolated values
+        # Create the domain and image values
         self.func = func
         self.domain_min = domain_min
         self.domain_max = domain_max
@@ -40,14 +39,14 @@ class FFrame(object):
 
         domain = np.arange(start=domain_min, stop=domain_max+self.domain_gran, step=self.domain_gran)
         self.domain = domain
+        values = self.func(self.domain)
 
         self.func_domain = np.linspace(self.domain_min, self.domain_max, num=self.funcsteps)
-        self.values = self.func(self.func_domain)
         
         # Define the allowed values given the chosen granularities
         max_val = np.max(values)
         if extrapolate: max_val += self.image_gran
-        min_val = self.get_min_val(np.min(values), extrapolate=extrapolate)
+        min_val = round(np.min(values) / self.image_gran) * self.image_gran
         allowed_values = np.arange(start=min_val, stop=max_val+self.image_gran, step=self.image_gran)
         self.discrete_func = self.chunk(allowed_values, values)
 
@@ -82,24 +81,6 @@ class FFrame(object):
         if last_value_allowed: chunked.append(values[-1])
         return chunked
     
-    def get_min_val(self, minval, extrapolate=True):
-        """ Returns multiple of image_gran nearest to minval """        
-        from math import ceil, floor
-
-        if minval == 0:
-            return 0
-            
-        elif minval < 0:
-            if extrapolate:
-                return floor(minval / self.image_gran) * self.image_gran
-            else: 
-                return ceil(minval / self.image_gran) * self.image_gran
-
-        elif minval > 0:
-            if extrapolate:
-                return ceil(minval / self.image_gran) * self.image_gran
-            else: 
-                return floor(minval / self.image_gran) * self.image_gran
 
     def agglomerated(self):
         """Agglomerate neighboring image values if they are the same 
@@ -119,12 +100,12 @@ class FFrame(object):
         return np.array(agglomerated_steps), np.array(agglomerated_values)
 
     def compare_functions(self, ax=None, show=True):
-        """Plot the discretized and interpolated versions of the function.
+        """Plot the discretized and original versions of the function.
         Returns:
             ax (:obj:axis): Axis object.
         """
         
-        interp_image = self.interpolator(self.func_domain)
+        interp_image = self.func(self.func_domain)
 
         if ax:
             ax.plot(self.domain, self.discrete_func, label='discretized', color='b')
@@ -144,5 +125,5 @@ class FFrame(object):
 if __name__ == "__main__":
 
     f = FFrame(0, 120, lambda x:10*np.sin(x),
-               funcsteps=1000, domain_gran=2)
+               funcsteps=1000, domain_gran=1)
     f.compare_functions(show=True)
