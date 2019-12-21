@@ -108,18 +108,18 @@ class FFrame(object):
             ax (:obj:axis): Axis object.
         """
         
-        discrete_func = self.lut_method()
+        # discrete_func = self.lut_method()
         interp_image = self.func(x_values)
         functional_vals = list(self.functional_method())
 
         if ax:
-            ax.plot(self.domain, discrete_func, label='lut', color='b')
+            # ax.plot(self.domain, discrete_func, label='lut', color='b')
             ax.plot(self.domain, functional_vals, label='functional', color='k')
-            ax.plot(self.func_domain, interp_image, label='Input values', color='r')
+            ax.plot(x_values, interp_image, label='Input values', color='r')
         else:
-            plt.plot(self.domain, discrete_func, label='lut', color='b')
+            # plt.plot(self.domain, discrete_func, label='lut', color='b')
             plt.plot(self.domain, functional_vals, label='functional', color='k')
-            plt.plot(self.func_domain, interp_image, label='Input values', color='r')
+            plt.plot(x_values, interp_image, label='Input values', color='r')
 
         ax = plt.gca()
             
@@ -133,9 +133,9 @@ class FFrame(object):
 if __name__ == "__main__":
     from timerit import Timerit
 
-    f = FFrame(0, 120, lambda x:x**3, domain_gran=0.5, image_gran=100)
+    f = FFrame(5, 120, lambda x: 100*np.sin(x)+np.cos(x), domain_gran=5, image_gran=2)
 
-    # f.compare_functions(np.linspace(0,120))
+    f.compare_functions(np.linspace(0,120,num=1000))
 
     if True:
         print("Functional method:")
