@@ -133,19 +133,15 @@ class FFrame(object):
 if __name__ == "__main__":
     from timerit import Timerit
 
-    f = FFrame(5, 120, lambda x: 100*np.sin(x)+np.cos(x), domain_gran=5, image_gran=2)
+    f = FFrame(5, 120, lambda x: np.sin(x)*x**3, domain_gran=1, image_gran=5000)
 
     f.compare_functions(np.linspace(0,120,num=1000))
 
     if True:
         print("Functional method:")
-        for _ in Timerit(num=100, verbose=2):
+        for _ in Timerit(num=1000, verbose=2):
             f.functional_method()
 
         print("\nLUT method:")
-        for _ in Timerit(num=100, verbose=2):
+        for _ in Timerit(num=1000, verbose=2):
             f.lut_method()
-
-    # t = Timer(f.functional_method, number=1000)
-    # print(t)
-    # f.lut_method()
