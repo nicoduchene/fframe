@@ -2,7 +2,7 @@ FFrame
 ======
 
 FFrame was a quick comparison between two algorithms.
-One was extremely inefficient, and the second much faster!
+Once implemented, one was extremely inefficient, and the second much faster!
 The goal was to discretize a function's domain and image
 given some allowed values.
 
