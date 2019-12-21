@@ -41,11 +41,12 @@ class FFrame(object):
         # Define the allowed values given the chosen granularities
 
     def functional_method(self):
+        """ Functional implementation. """
         for x in self.domain:
             yield np.round(self.func(x) / self.image_gran) * self.image_gran
 
     def lut_method(self):
-
+        """ LUT like implementation. """
         values = self.func(self.domain)
         max_val = np.max(values)
         # if extrapolate: max_val += self.image_gran
