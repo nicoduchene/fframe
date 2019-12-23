@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
+from timerit import Timerit
 
 class FFrame(object):
     """FFrame is (for now) a 1D piecewise discretizer for arbitrary domain and image granularity.
@@ -20,8 +21,6 @@ class FFrame(object):
 
     interp_values = []
     func_domain = []
-
-
     
     def __init__(self, domain_min, domain_max, func,
                 domain_gran=5, image_gran=0.5,
@@ -104,7 +103,7 @@ class FFrame(object):
         
         return np.array(agglomerated_steps), np.array(agglomerated_values)
 
-    def compare_functions(self, x_values, ax=None, show=True):
+    def plot_functions(self, x_values, ax=None, show=True):
         """Plot the discretized and original versions of the function.
         Returns:
             ax (:obj:axis): Axis object.
@@ -131,29 +130,125 @@ class FFrame(object):
         
         return ax
 
-    def time_functional(self):
+    def time_functional(self, numloops=1000):
         """ Time the functional method """
-        pass
-
-    def time_lut(self):
+        t = Timerit(num=numloops)
+        for _ in t:
+            self.functional_method()
+        results = {'method': 'functional',
+                   'mean': [t.mean()],
+                   'std': [t.std()]
+                   }
+        return results 
+        
+    def time_lut(self, numloops=1000):
         """ Time LUT method"""
-        pass
+        t = Timerit(num=numloops)
+        for _ in t:
+            self.lut_method()
+        results = {'method': 'lut',
+                   'mean': [t.mean()],
+                   'std': [t.std()]
+                   }
+        return results
+
+import pandas as pd
+
+class Analysis(object):
+    """Group together the analysis results and present them."""
+
+    def __init__(self, ax):
+        self.df = pd.DataFrame()
+        self.ax = ax
+
+    def add_results(self, performance_dict):
+        self.df = self.df.append(pd.DataFrame(performance_dict))
+
+    def plot_results(self, x_label='func_label', y_labels=['mean', 'std']):
+        self.df.plot(x_label, y_labels, kind='bar', subplots=False, logy=True, ax=self.ax)
+
+
+def analyze(a_func, a_lut, func, d_min, d_max, d_gran, i_gran, label):
+    """Analyze performance of functional and lut methods for given args.
+    Updates the two analysis objects that are input.
+    Args:
+        a_func (:obj:Analysis): Analysis object for functional implementation.
+        a_lut (:obj:Analysis): Analysis object for lut implementation.
+        func (:obj:callable): Function to discretize.
+        d_min (float): Domain min.
+        d_max (float): Domain max.
+        d_gran (float): Domain granularity.
+        i_gran (float): Image granularity.
+        label (str): Label root to name func_labels in analysis dataframes.
+    """
+
+    f = FFrame(d_min, d_max, func, domain_gran=d_gran, image_gran=i_gran)
+    
+    results = f.time_functional()
+    results['func_label'] = label
+    a_func.add_results(results)    
+
+    f.init_lut(image_chunks=10)
+    results = f.time_lut()
+    results['func_label'] = label+'_c10'
+    a_lut.add_results(results)
+
+    f.init_lut(image_chunks=25)
+    results = f.time_lut()
+    results['func_label'] = label+'_c25'
+    a_lut.add_results(results)
+
+    f.init_lut(image_chunks=50)
+    results = f.time_lut()
+    results['func_label'] = label+'_c50'
+    a_lut.add_results(results)
+
+    del(f)
+
+def analyze_x3sinx():
+
+    _, ax = plt.subplots(1,2)
+    a_func = Analysis(ax=ax[0])
+    a_lut = Analysis(ax=ax[1])
+
+    func = lambda x: np.sin(x)*x**3
+    """ x**3sin(x) from 0 to 10 """
+    analyze(a_func, a_lut, func, 0, 10, 0.1, 20, 'd10')
+    
+    """ x**3sin(x) from 0 to 100 """
+    analyze(a_func, a_lut, func, 0, 100, 1, 20000, 'd100')
+    
+    """ x**3sin(x) from 0 to 1000 """
+    analyze(a_func, a_lut, func, 0, 1000, 10, 2000000, 'd1000')
+    
+    a_func.plot_results()
+    a_lut.plot_results()
+    plt.show()
+
+def analyze_sinx_over_x():
+    
+    _, ax = plt.subplots(1,2)
+    a_func = Analysis(ax=ax[0])
+    a_lut = Analysis(ax=ax[1])
+
+    func = lambda x: np.sin(x)/x
+    """ x**3sin(x) from 0.1 to 10 """
+    analyze(a_func, a_lut, func, 0.1, 10, 0.1, 0.01, 'd10')
+    
+    """ x**3sin(x) from 0 to 100 """
+    analyze(a_func, a_lut, func, 0.1, 100, 1, 0.01, 'd100')
+    
+    """ x**3sin(x) from 0 to 1000 """
+    analyze(a_func, a_lut, func, 0.1, 1000, 10, 0.01, 'd1000')
+    
+    a_func.plot_results()
+    a_lut.plot_results()
+    plt.show()
 
 if __name__ == "__main__":
-    from timerit import Timerit
 
-    f = FFrame(5, 120, lambda x: np.sin(x)*x**3, domain_gran=1, image_gran=5000)
-
-    f.compare_functions(np.linspace(0,120,num=1000))
-
-    if True:
-        print("Functional method:")
-        t_func = Timerit(num=1000, verbose=2)
-        for _ in t_func:
-            f.functional_method()
-        # print(t_func.mean(), t_func.min(), t_func.std())
-        # values, allowed_pairs, allowed_partition, last_value_allowed = f.init_lut()
-        f.init_lut(image_chunks=50)
-        print("\nLUT method:")
-        for _ in Timerit(num=1000, verbose=2):
-            f.lut_method()
+    # analyze_x3sinx()
+    analyze_sinx_over_x()
+    f = FFrame(0.1, 100, lambda x: np.sin(x)/x, domain_gran=1, image_gran=0.01)
+    f.plot_functions(np.linspace(0.1,100,1000))
+    plt.show()
