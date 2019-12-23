@@ -34,29 +34,16 @@ class FFrame(object):
         self.domain_min = domain_min
         self.domain_max = domain_max
 
-        domain = np.arange(start=domain_min, stop=domain_max+self.domain_gran, step=self.domain_gran)
-        self.domain = domain
+        self.domain = np.arange(start=domain_min, stop=domain_max+self.domain_gran, step=self.domain_gran)
 
-        
-        # Define the allowed values given the chosen granularities
 
     def functional_method(self):
         """ Functional implementation. """
         for x in self.domain:
             yield np.round(self.func(x) / self.image_gran) * self.image_gran
-
-    def lut_method(self):
-        """ LUT like implementation. """
-        values = self.func(self.domain)
-        max_val = np.max(values)
-        # if extrapolate: max_val += self.image_gran
-        min_val = np.round(np.min(values) / self.image_gran) * self.image_gran
-        allowed_values = np.arange(start=min_val, stop=max_val+self.image_gran, step=self.image_gran)
-        return self.chunk(allowed_values, values)
-        
-    def chunk(self, allowed_values, values, steps=10):
-        """ Round values to nearest allowed_value. """
-
+    
+    def init_lut(self, image_chunks=10):
+        """ Initialize data structures. """
         def pairwise(iterable):
             "s -> (s0,s1), (s1,s2), (s2, s3), ..."
             from itertools import tee
@@ -65,27 +52,41 @@ class FFrame(object):
             next(b, None)
             return zip(a, b)
 
+        values = self.func(self.domain)        
+        max_val = np.max(values)
+        # if extrapolate: max_val += self.image_gran
+        min_val = np.round(np.min(values) / self.image_gran) * self.image_gran
+        allowed_values = np.arange(start=min_val, stop=max_val+self.image_gran, step=self.image_gran)
+
         last_value_allowed = values[-1] in allowed_values
-        allowed_domain = np.linspace(allowed_values[0], allowed_values[-1], steps)
+
+        allowed_domain = np.linspace(allowed_values[0], allowed_values[-1], image_chunks)
         allowed_pairs = list(pairwise(allowed_domain))
         allowed_partition = [[value for value in allowed_values 
                                 if (value>=mini and value<maxi)]
                             for mini, maxi in allowed_pairs]
         if last_value_allowed: allowed_partition[-1].append(values[-1])
-        allowed_values = None
+
+        self.values = values
+        self.allowed_pairs = allowed_pairs
+        self.allowed_partition = allowed_partition
+        self.last_value_allowed = last_value_allowed
+
+    def lut_method(self):
+        """ Round values to nearest allowed_value. """
+        
         chunked = []
-        for value in values:
-            for minimaxi, partition in zip(allowed_pairs, allowed_partition):
+        for value in self.values:
+            for minimaxi, partition in zip(self.allowed_pairs, self.allowed_partition):
                 mini, maxi = minimaxi
                 if value >= mini and value < maxi:
                     dists = [(abs(value-allowed), allowed) for allowed in partition]
                     distsort = sorted(dists, key=lambda pair:pair[0])
                     chunked += [distsort[0][1]]
 
-        if last_value_allowed: chunked.append(values[-1])
+        if self.last_value_allowed: chunked.append(values[-1])
         return chunked
     
-
     def agglomerated(self):
         """Agglomerate neighboring image values if they are the same 
         Returns:
@@ -130,6 +131,13 @@ class FFrame(object):
         
         return ax
 
+    def time_functional(self):
+        """ Time the functional method """
+        pass
+
+    def time_lut(self):
+        """ Time LUT method"""
+        pass
 
 if __name__ == "__main__":
     from timerit import Timerit
@@ -140,9 +148,12 @@ if __name__ == "__main__":
 
     if True:
         print("Functional method:")
-        for _ in Timerit(num=1000, verbose=2):
+        t_func = Timerit(num=1000, verbose=2)
+        for _ in t_func:
             f.functional_method()
-
+        # print(t_func.mean(), t_func.min(), t_func.std())
+        # values, allowed_pairs, allowed_partition, last_value_allowed = f.init_lut()
+        f.init_lut(image_chunks=50)
         print("\nLUT method:")
         for _ in Timerit(num=1000, verbose=2):
             f.lut_method()
