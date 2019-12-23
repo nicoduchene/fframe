@@ -19,7 +19,7 @@ given some allowed values.
     and so will not spend any time looking into the underlying error.
     It is most likely an indexing error. 
 2. Iterator method.
-    This is much simpler. It is a one-liner.
+    This is much simpler. It is basically a one-liner.
     It not only gets rid of a bunch of boiler-plate code,
     but it runs much faster. More on this in the comparison 
     of the two methods. Furthermore, there are no mismatch issues 
@@ -28,5 +28,6 @@ given some allowed values.
 
 Comparison of performance
 -------------------------
-TODO
+Look at a few functions, with a few different granularities.
+Make a histogram plot with the run time statistics.
 
