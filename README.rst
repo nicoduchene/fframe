@@ -1,7 +1,7 @@
 FFrame
 ======
 
-FFrame was a quick comparison between two algorithms.
+FFrame is a quick comparison between two algorithms.
 Once implemented, one was extremely inefficient, and the second much faster!
 The goal was to discretize a function's domain and image
 given some allowed values.
@@ -21,13 +21,34 @@ given some allowed values.
 2. Iterator method.
     This is much simpler. It is basically a one-liner.
     It not only gets rid of a bunch of boiler-plate code,
-    but it runs much faster. More on this in the comparison 
+    but it runs 1000x faster. More on this in the comparison 
     of the two methods. Furthermore, there are no mismatch issues 
     to deal with, unless the function isn't defined in one of the 
     domain points.
 
 Comparison of performance
 -------------------------
-Look at a few functions, with a few different granularities.
-Make a histogram plot with the run time statistics.
+- :math:`\frac{ \mathrm{sin}(x) }{x}`
+
+.. image:: images/sinx_over_x.png
+   :width: 400
+   :alt: sinx_over_x
+
+Analysis:
+
+.. image:: images/sinxoverx_ana.png
+   :width: 400
+   :alt: sinx_over_x_ana
+
+- :math:`\mathrm{sin}(x)\cdot x**3`
+
+.. image:: images/x3sinx.png
+   :width: 400
+   :alt: x3sinx
+
+Analysis:
+
+.. image:: images/x3sinx_ana.png
+   :width: 400
+   :alt: x3sinx_ana
 
