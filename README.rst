@@ -12,12 +12,8 @@ given some allowed values.
     and finding the nearest allowed value.
     This method would be more interesting if the values need
     to be used many times, instead of just once to discretize the 
-    image values. There is a big problem with my implementation,
-    due to some occasional mismatch between domain values and
-    image values, depending on the input function. 
-    I found these issues after implementing the much simpler method, 
-    and so will not spend any time looking into the underlying error.
-    It is most likely an indexing error. 
+    image values. One needs to be careful to use a good value for
+    the image granularity as to properly populate the allowed_values.
 2. Iterator method.
     This is much simpler. It is basically a one-liner.
     It not only gets rid of a bunch of boiler-plate code,
