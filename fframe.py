@@ -3,6 +3,19 @@ from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 from timerit import Timerit
 
+SMALL_SIZE = 18
+MEDIUM_SIZE = 20
+BIGGER_SIZE = 22
+
+plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
+plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
+
 class FFrame(object):
     """FFrame is (for now) a 1D piecewise discretizer for arbitrary domain and image granularity.
     Args:
@@ -115,12 +128,12 @@ class FFrame(object):
 
         if ax:
             # ax.plot(self.domain, discrete_func, label='lut', color='b')
-            ax.plot(self.domain, functional_vals, label='functional', color='k')
-            ax.plot(x_values, interp_image, label='Input values', color='r')
+            ax.plot(self.domain, functional_vals, label='Discretized', color='k', marker='o')
+            ax.plot(x_values, interp_image, label='As is', color='r')
         else:
             # plt.plot(self.domain, discrete_func, label='lut', color='b')
-            plt.plot(self.domain, functional_vals, label='functional', color='k')
-            plt.plot(x_values, interp_image, label='Input values', color='r')
+            plt.plot(self.domain, functional_vals, label='Discretized', color='k', marker='o')
+            plt.plot(x_values, interp_image, label='As is', color='r')
 
         ax = plt.gca()
             
@@ -166,6 +179,11 @@ class Analysis(object):
 
     def plot_results(self, x_label='func_label', y_labels=['mean', 'std']):
         self.df.plot(x_label, y_labels, kind='bar', subplots=False, logy=True, ax=self.ax)
+        self.ax.legend()
+        self.ax.set_xlabel('Parametrization')
+        self.ax.set_ylabel('Time (s)')
+        for tick in self.ax.get_xticklabels():
+            tick.set_rotation(45)
 
 
 def analyze(a_func, a_lut, func, d_min, d_max, d_gran, i_gran, label):
@@ -207,7 +225,7 @@ def analyze(a_func, a_lut, func, d_min, d_max, d_gran, i_gran, label):
 
 def analyze_x3sinx():
 
-    _, ax = plt.subplots(1,2)
+    _, ax = plt.subplots(1, 2, sharey=True)
     a_func = Analysis(ax=ax[0])
     a_lut = Analysis(ax=ax[1])
 
@@ -227,7 +245,7 @@ def analyze_x3sinx():
 
 def analyze_sinx_over_x():
     
-    _, ax = plt.subplots(1,2)
+    _, ax = plt.subplots(1, 2, sharey=True)
     a_func = Analysis(ax=ax[0])
     a_lut = Analysis(ax=ax[1])
 
@@ -247,8 +265,12 @@ def analyze_sinx_over_x():
 
 if __name__ == "__main__":
 
-    # analyze_x3sinx()
-    analyze_sinx_over_x()
     f = FFrame(0.1, 100, lambda x: np.sin(x)/x, domain_gran=1, image_gran=0.01)
     f.plot_functions(np.linspace(0.1,100,1000))
     plt.show()
+    analyze_sinx_over_x()
+
+    f = FFrame(0, 100, lambda x: np.sin(x)*x**3, domain_gran=1, image_gran=100000)
+    f.plot_functions(np.linspace(0.1,100,1000))
+    plt.show()
+    analyze_x3sinx()
